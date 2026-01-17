@@ -75,3 +75,7 @@ def get_bookings(request):
         })
 
     return JsonResponse(data, safe=False)
+
+
+def miniApp(request):
+    return render(request, "miniApp.html")
