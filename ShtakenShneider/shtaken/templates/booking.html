@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Бронирование</title>
+</head>
+<body>
+    <h1>Форма бронирования</h1>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <label>Имя:</label><br>
+        <input type="text" name="first_name" required><br><br>
+
+        <label>Фамилия:</label><br>
+        <input type="text" name="last_name" required><br><br>
+
+        <label>Телефон:</label><br>
+        <input type="tel" name="phone" required><br><br>
+
+        <label>Количество гостей:</label><br>
+        <input type="number" name="guests" min="1" required><br><br>
+
+        <label>Выбор зала:</label><br>
+        <select name="hall" required>
+            <option value="1">Зал 1</option>
+            <option value="2">Зал 2</option>
+        </select><br><br>
+
+        <label>Комментарии:</label><br>
+        <textarea name="comments"></textarea><br><br>
+
+        <button type="submit">Отправить бронь</button>
+    </form>
+</body>
+</html>

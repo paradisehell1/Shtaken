@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Простой POST-запрос</title>
+</head>
+<body>
+    <h1>Простой POST-запрос</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" name="mybutton" value="Кнопка нажата">Нажми меня</button>
+    </form>
+</body>
+</html>
