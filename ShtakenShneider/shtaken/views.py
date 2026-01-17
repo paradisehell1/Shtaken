@@ -78,4 +78,4 @@ def get_bookings(request):
 
 
 def miniApp(request):
-    return render(request, "miniApp.html")
+    return render(request, "MiniApp.html")
