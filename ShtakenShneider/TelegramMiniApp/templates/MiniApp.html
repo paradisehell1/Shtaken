@@ -57,9 +57,17 @@ button.view { background:#6c757d; }
 
 <!-- Кнопки перехода -->
 <div id="bookingTabs" style="text-align:center; margin-bottom:20px;">
-    <a href="{% url 'miniApp' %}" class="tab-link {% if request.path == '/miniApp/' %}active{% endif %}">Бронирование столов</a>
-    <a href="{% url 'miniAppBanket' %}" class="tab-link {% if request.path == '/banketApp/' %}active{% endif %}">Банкеты</a>
+    <a href="{% url 'miniApp' %}" class="tab-link {% if request.resolver_match.url_name == 'miniApp' %}active{% endif %}">
+        Бронирование столов
+        {% if new_count > 0 %}<span style="color:green;">+{{ new_count }}</span>{% endif %}
+    </a>
+    <a href="{% url 'miniAppBanket' %}" class="tab-link {% if request.resolver_match.url_name == '/miniApp/miniAppBanket/' %}active{% endif %}">
+        Банкеты
+        {% if new_bankets_count > 0 %}<span style="color:green;">+{{ new_bankets_count }}</span>{% endif %}
+    </a>
 </div>
+
+
 
 <!-- сводка -->
 <div class="summary">

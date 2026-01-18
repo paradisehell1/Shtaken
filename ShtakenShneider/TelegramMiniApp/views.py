@@ -5,18 +5,22 @@ from django.http import JsonResponse
 
 # views.py
 def miniApp(request):
-    # Берем все бронирования, сортируем по дате
     bookings = Booking.objects.all().order_by('-created_at')
-
-    # Фильтруем на новые и обработанные
     new_bookings = bookings.filter(status='waiting')
     processed_bookings = bookings.filter(status__in=['confirmed', 'cancelled'])
+
+    # Количество новых банкетов для вкладки
+    new_bankets_count = BookingBanket.objects.filter(status='waiting').count()
 
     return render(request, "MiniApp.html", {
         'new_bookings': new_bookings,
         'processed_bookings': processed_bookings,
-        'bookings': bookings,  # для сводки сверху
+        'bookings': bookings,
+        'new_count': new_bookings.count(),
+        'new_bankets_count': new_bankets_count,
     })
+
+
 
 def change_status(request):
     if request.method == "POST":
@@ -34,18 +38,22 @@ def change_status(request):
 
 # Страница со списком банкетных бронирований
 def miniAppBanket(request):
-    # Берем все бронирования, сортируем по дате
     bookings = BookingBanket.objects.all().order_by('-created_at')
-
-    # Фильтруем на новые и обработанные
     new_bookings = bookings.filter(status='waiting')
     processed_bookings = bookings.filter(status__in=['confirmed', 'cancelled'])
 
+    # Количество новых столов для вкладки
+    new_tables_count = Booking.objects.filter(status='waiting').count()
+    print(new_tables_count)
     return render(request, "MiniAppBanket.html", {
         'new_bookings': new_bookings,
         'processed_bookings': processed_bookings,
-        'bookings': bookings,  # для сводки сверху
+        'bookings': bookings,
+        'new_count': new_bookings.count(),
+        'new_tables_count': new_tables_count,
     })
+
+
 
 # AJAX для смены статуса банкетного бронирования
 def change_status_banket(request):
