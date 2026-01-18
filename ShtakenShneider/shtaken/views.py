@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.http import JsonResponse
-from .models import Booking
+from .models import Booking, BookingBanket
 import requests
 import json
 import threading
@@ -54,9 +54,55 @@ def booking(request):
         #except Exception as e:
          #   print("Ошибка отправки Telegram:", e)
 
-        return HttpResponse(f"Бронь сохранена! ID: {booking.id}")
+        return HttpResponse(f"Бронь сохранена! ID: {banket.id}")
 
     return render(request, "booking.html")
+
+
+def banket(request):
+    if request.method == "POST":
+        first_name = request.POST.get("first_name", "")
+        last_name = request.POST.get("last_name", "")
+        phone = request.POST.get("phone", "")
+        guests = request.POST.get("guests", "")
+        status="waiting"
+
+        banket_booking = BookingBanket.objects.create(
+            first_name=first_name,
+            last_name=last_name,
+            phone=phone,
+            guests=guests,
+            status=status,
+        )
+
+        message = (
+            f"Новая бронь!\n"
+            f"Имя: {first_name}\n"
+            f"Фамилия: {last_name}\n"
+            f"Телефон: {phone}\n"
+            f"Гостей: {guests}\n"
+        )
+
+        reply_markup = {
+            "inline_keyboard": [
+                [
+                   # {"text": "🍽 Открыть бронирование", "web_app": {"url": WEB_APP_URL}}
+                ]
+            ]
+        }
+
+        #try:
+           # requests.post(TELEGRAM_API_URL, data={
+            #    "chat_id": CHAT_ID,
+             #   "text": message,
+             #   "reply_markup": json.dumps(reply_markup)
+            #})
+        #except Exception as e:
+         #   print("Ошибка отправки Telegram:", e)
+
+        return HttpResponse(f"Бронь сохранена! ID: {banket_booking.id}")
+
+    return render(request, "banket.html")
 def get_bookings(request):
     """
     Возвращает список всех бронирований в JSON
