@@ -33,12 +33,20 @@ button.view { background:#6c757d; }
 .summary-item.confirmed { background:#d4edda; color:#155724; }
 .summary-item.cancelled { background:#f8d7da; color:#721c24; }
 .summary-item.total { background:#cce5ff; color:#004085; }
+.tab-link { padding: 10px 20px; margin: 0 5px; border-radius: 6px; text-decoration: none; font-weight: bold; color: #004085; background-color: #e1ecf9; transition: 0.2s; }
+.tab-link:hover { background-color: #d0e2f7; }
+.tab-link.active { background-color: #007bff; color: #fff; }
 </style>
 </head>
 <body>
 
-<h1>Банкетные бронирования</h1>
-<h2>Список бронирований</h2>
+<h1>Штакеншнейдер</h1>
+
+<!-- Кнопки перехода -->
+<div id="bookingTabs" style="text-align:center; margin-bottom:20px;">
+    <a href="{% url 'miniApp' %}" class="tab-link {% if request.path == '/miniApp/' %}active{% endif %}">Бронирование столов</a>
+    <a href="{% url 'miniAppBanket' %}" class="tab-link {% if request.path == '/miniApp/miniAppBanket/' %}active{% endif %}">Банкеты</a>
+</div>
 
 <!-- сводка -->
 <div class="summary">
@@ -93,7 +101,7 @@ button.view { background:#6c757d; }
 <table>
 <thead>
 <tr>
-<th>Номер</th><th>Имя</th><th>Телефон</th><th>Дата и время</th><th>Гостей</th><th>Статус</th>
+<th>Номер</th><th>Имя</th><th>Телефон</th><th>Дата и время</th><th>Гостей</th><th>Статус</th><th>Действия</th>
 </tr>
 </thead>
 <tbody>
@@ -106,8 +114,10 @@ button.view { background:#6c757d; }
 <td>{{ b.guests|default:"-" }}</td>
 <td>
 {% if b.status == "confirmed" %}<span class="status confirmed">Подтверждено</span>
-{% elif b.status == "cancelled" %}<span class="status cancelled">Отменено</span>
-{% endif %}
+{% elif b.status == "cancelled" %}<span class="status cancelled">Отменено</span>{% endif %}
+</td>
+<td>
+<button class="view" onclick="openModal({{ b.id }}, '{{ b.first_name|default:'' }}', '{{ b.last_name|default:'' }}', '{{ b.phone|default:'' }}', {{ b.guests|default:0 }}, '{{ b.status }}', '{{ b.created_at|date:'d.m.Y H:i' }}')">Просмотр</button>
 </td>
 </tr>
 {% endfor %}
@@ -123,6 +133,7 @@ button.view { background:#6c757d; }
     <p><strong>Имя:</strong> <span id="modalName"></span></p>
     <p><strong>Телефон:</strong> <span id="modalPhone"></span></p>
     <p><strong>Гостей:</strong> <span id="modalGuests"></span></p>
+    <p><strong>Дата и время:</strong> <span id="modalDate"></span></p>
     <p><strong>Статус:</strong> <span id="modalStatus"></span></p>
     <div class="modal-actions">
         <button class="confirm">Подтвердить</button>
@@ -134,7 +145,7 @@ button.view { background:#6c757d; }
 <script>
 let currentBookingId = null;
 
-function openModal(id, firstName, lastName, phone, guests, status, date){
+function openModal(id, firstName, lastName, phone, guests, status, date) {
     currentBookingId = id;
     document.getElementById('modalName').innerText = firstName + ' ' + lastName;
     document.getElementById('modalPhone').innerText = phone;
@@ -142,24 +153,25 @@ function openModal(id, firstName, lastName, phone, guests, status, date){
     document.getElementById('modalDate').innerText = date;
 
     const statusEl = document.getElementById('modalStatus');
-    statusEl.className='status';
-    if(status==='confirmed'){statusEl.classList.add('confirmed'); statusEl.innerText='Подтверждено';}
-    else if(status==='waiting'){statusEl.classList.add('waiting'); statusEl.innerText='Ожидание';}
-    else if(status==='cancelled'){statusEl.classList.add('cancelled'); statusEl.innerText='Отменено';}
+    statusEl.className = 'status';
+    if(status === 'confirmed') { statusEl.classList.add('confirmed'); statusEl.innerText='Подтверждено'; }
+    else if(status === 'waiting') { statusEl.classList.add('waiting'); statusEl.innerText='Ожидание'; }
+    else if(status === 'cancelled') { statusEl.classList.add('cancelled'); statusEl.innerText='Отменено'; }
 
-    document.getElementById('bookingModal').style.display="block";
+    document.getElementById('bookingModal').style.display = "block";
 }
 
-function closeModal(){
-    document.getElementById('bookingModal').style.display="none";
+function closeModal() {
+    document.getElementById('bookingModal').style.display = "none";
     window.location.reload();
 }
 
 window.onclick = function(event){
     const modal = document.getElementById('bookingModal');
-    if(event.target===modal) closeModal();
+    if(event.target === modal) closeModal();
 }
 
+// сводка
 const bookings = [
 {% for b in bookings %}
 {id:{{ b.id }}, status:"{{ b.status }}"}{% if not forloop.last %},{% endif %}
@@ -183,21 +195,21 @@ updateSummary(bookings);
 
 function changeStatus(newStatus){
     if(!currentBookingId) return;
-    fetch("{% url 'change_status_banket' %}",{
+    fetch("{% url 'change_status_banket' %}", {
         method:'POST',
         headers:{'Content-Type':'application/x-www-form-urlencoded','X-CSRFToken':'{{ csrf_token }}'},
         body:`id=${currentBookingId}&status=${newStatus}`
     })
-    .then(r=>r.json())
-    .then(data=>{
+    .then(r => r.json())
+    .then(data => {
         if(data.success){
             const statusEl = document.getElementById('modalStatus');
-            statusEl.className='status';
-            if(newStatus==='confirmed'){statusEl.classList.add('confirmed'); statusEl.innerText='Подтверждено';}
-            else if(newStatus==='waiting'){statusEl.classList.add('waiting'); statusEl.innerText='Ожидание';}
-            else if(newStatus==='cancelled'){statusEl.classList.add('cancelled'); statusEl.innerText='Отменено';}
+            statusEl.className = 'status';
+            if(newStatus==='confirmed'){ statusEl.classList.add('confirmed'); statusEl.innerText='Подтверждено'; }
+            else if(newStatus==='waiting'){ statusEl.classList.add('waiting'); statusEl.innerText='Ожидание'; }
+            else if(newStatus==='cancelled'){ statusEl.classList.add('cancelled'); statusEl.innerText='Отменено'; }
 
-            bookings.forEach(b=>{if(b.id===currentBookingId) b.status=newStatus;});
+            bookings.forEach(b => { if(b.id===currentBookingId) b.status=newStatus; });
             updateSummary(bookings);
         } else alert('Ошибка: '+data.error);
     });
