@@ -77,12 +77,11 @@ def get_bookings(request):
     return JsonResponse(data, safe=False)
 
 
-def miniApp(request):
-    return render(request, "MiniApp.html")
+
 
 def debug_proto(request):
     return HttpResponse(f"""
         scheme: {request.scheme}<br>
         X-Forwarded-Proto: {request.META.get('HTTP_X_FORWARDED_PROTO')}<br>
-        is_secure: {request.is_secure()}
+        is_secure(): {request.is_secure()}
     """)
