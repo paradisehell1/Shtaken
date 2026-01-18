@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Список бронирований</title>
+<title>Список банкетных бронирований</title>
 <style>
 body { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; padding: 20px; }
 h1, h2 { text-align:center; color:#4a90e2; margin-bottom:20px; }
@@ -19,7 +19,6 @@ button { padding: 5px 10px; margin: 2px; border:none; border-radius:4px; color:#
 button.confirm { background:#007bff; }
 button.cancel { background:#dc3545; }
 button.view { background:#6c757d; }
-
 /* модалка */
 .modal { display: none; position: fixed; z-index: 1000; left:0; top:0; width:100%; height:100%; overflow:auto; background-color: rgba(0,0,0,0.5); }
 .modal-content { background-color: #fff; margin: 10% auto; padding: 20px; border-radius:8px; width:500px; max-width:90%; box-shadow:0 5px 15px rgba(0,0,0,0.3); }
@@ -38,7 +37,7 @@ button.view { background:#6c757d; }
 </head>
 <body>
 
-<h1>Штакеншнейдер</h1>
+<h1>Банкетные бронирования</h1>
 <h2>Список бронирований</h2>
 
 <!-- сводка -->
@@ -67,7 +66,7 @@ button.view { background:#6c757d; }
 <table>
 <thead>
 <tr>
-<th>Номер</th><th>Имя</th><th>Телефон</th><th>Дата и время</th><th>Гостей</th><th>Зал</th><th>Статус</th><th>Действия</th>
+<th>Номер</th><th>Имя</th><th>Телефон</th><th>Дата и время</th><th>Гостей</th><th>Статус</th><th>Действия</th>
 </tr>
 </thead>
 <tbody>
@@ -78,10 +77,9 @@ button.view { background:#6c757d; }
 <td>{{ b.phone|default:"-" }}</td>
 <td>{{ b.created_at|date:"d.m.Y H:i" }}</td>
 <td>{{ b.guests|default:"-" }}</td>
-<td>{{ b.hall|default:"-" }}</td>
 <td><span class="status waiting">Ожидание</span></td>
 <td>
-<button class="view" onclick="openModal({{ b.id }}, '{{ b.first_name|default:'' }}', '{{ b.last_name|default:'' }}', '{{ b.phone|default:'' }}', {{ b.guests|default:0 }}, '{{ b.hall|default:'' }}', '{{ b.comments|default:'' }}', '{{ b.created_at|date:'d.m.Y H:i' }}', '{{ b.status }}')">Просмотр</button>
+<button class="view" onclick="openModal({{ b.id }}, '{{ b.first_name|default:'' }}', '{{ b.last_name|default:'' }}', '{{ b.phone|default:'' }}', {{ b.guests|default:0 }}, '{{ b.status }}', '{{ b.created_at|date:'d.m.Y H:i' }}')">Просмотр</button>
 </td>
 </tr>
 {% endfor %}
@@ -95,7 +93,7 @@ button.view { background:#6c757d; }
 <table>
 <thead>
 <tr>
-<th>Номер</th><th>Имя</th><th>Телефон</th><th>Дата и время</th><th>Гостей</th><th>Зал</th><th>Статус</th><th>Действия</th>
+<th>Номер</th><th>Имя</th><th>Телефон</th><th>Дата и время</th><th>Гостей</th><th>Статус</th>
 </tr>
 </thead>
 <tbody>
@@ -106,16 +104,10 @@ button.view { background:#6c757d; }
 <td>{{ b.phone|default:"-" }}</td>
 <td>{{ b.created_at|date:"d.m.Y H:i" }}</td>
 <td>{{ b.guests|default:"-" }}</td>
-<td>{{ b.hall|default:"-" }}</td>
 <td>
-{% if b.status == "confirmed" %}
-<span class="status confirmed">Подтверждено</span>
-{% elif b.status == "cancelled" %}
-<span class="status cancelled">Отменено</span>
+{% if b.status == "confirmed" %}<span class="status confirmed">Подтверждено</span>
+{% elif b.status == "cancelled" %}<span class="status cancelled">Отменено</span>
 {% endif %}
-</td>
-    <td>
-<button class="view" onclick="openModal({{ b.id }}, '{{ b.first_name|default:'' }}', '{{ b.last_name|default:'' }}', '{{ b.phone|default:'' }}', {{ b.guests|default:0 }}, '{{ b.hall|default:'' }}', '{{ b.comments|default:'' }}', '{{ b.created_at|date:'d.m.Y H:i' }}', '{{ b.status }}')">Просмотр</button>
 </td>
 </tr>
 {% endfor %}
@@ -131,9 +123,6 @@ button.view { background:#6c757d; }
     <p><strong>Имя:</strong> <span id="modalName"></span></p>
     <p><strong>Телефон:</strong> <span id="modalPhone"></span></p>
     <p><strong>Гостей:</strong> <span id="modalGuests"></span></p>
-    <p><strong>Зал:</strong> <span id="modalHall"></span></p>
-    <p><strong>Комментарии:</strong> <span id="modalComments"></span></p>
-    <p><strong>Дата и время:</strong> <span id="modalDate"></span></p>
     <p><strong>Статус:</strong> <span id="modalStatus"></span></p>
     <div class="modal-actions">
         <button class="confirm">Подтвердить</button>
@@ -145,72 +134,35 @@ button.view { background:#6c757d; }
 <script>
 let currentBookingId = null;
 
-function openModal(id, firstName, lastName, phone, guests, hall, comments, date, status) {
+function openModal(id, firstName, lastName, phone, guests, status, date){
     currentBookingId = id;
-    document.getElementById('modalName').innerText = firstName;
+    document.getElementById('modalName').innerText = firstName + ' ' + lastName;
     document.getElementById('modalPhone').innerText = phone;
     document.getElementById('modalGuests').innerText = guests;
-    document.getElementById('modalHall').innerText = hall;
-    document.getElementById('modalComments').innerText = comments || "-";
     document.getElementById('modalDate').innerText = date;
 
     const statusEl = document.getElementById('modalStatus');
-    statusEl.className = 'status';
-    if(status === 'confirmed') { statusEl.classList.add('confirmed'); statusEl.innerText='Подтверждено'; }
-    else if(status === 'waiting') { statusEl.classList.add('waiting'); statusEl.innerText='Ожидание'; }
-    else if(status === 'cancelled') { statusEl.classList.add('cancelled'); statusEl.innerText='Отменено'; }
+    statusEl.className='status';
+    if(status==='confirmed'){statusEl.classList.add('confirmed'); statusEl.innerText='Подтверждено';}
+    else if(status==='waiting'){statusEl.classList.add('waiting'); statusEl.innerText='Ожидание';}
+    else if(status==='cancelled'){statusEl.classList.add('cancelled'); statusEl.innerText='Отменено';}
 
     document.getElementById('bookingModal').style.display="block";
 }
 
-function closeModal() {
+function closeModal(){
     document.getElementById('bookingModal').style.display="none";
-    // при закрытии — перезагрузка, чтобы обновить таблицы
     window.location.reload();
 }
-function changeStatus(newStatus){
-    if(!currentBookingId) return;
 
-    fetch("{% url 'change_status' %}",{
-        method:'POST',
-        headers:{'Content-Type':'application/x-www-form-urlencoded','X-CSRFToken':'{{ csrf_token }}'},
-        body:`id=${currentBookingId}&status=${newStatus}`
-    })
-    .then(r=>r.json())
-    .then(data=>{
-        if(data.success){
-            // обновляем модалку динамически
-            const statusEl = document.getElementById('modalStatus');
-            statusEl.className = 'status';
-            if(newStatus==='confirmed'){ statusEl.classList.add('confirmed'); statusEl.innerText='Подтверждено'; }
-            else if(newStatus==='waiting'){ statusEl.classList.add('waiting'); statusEl.innerText='Ожидание'; }
-            else if(newStatus==='cancelled'){ statusEl.classList.add('cancelled'); statusEl.innerText='Отменено'; }
-
-            // обновляем массив для сводки
-            bookings.forEach(b=>{
-                if(b.id===currentBookingId) b.status=newStatus;
-            });
-            updateSummary(bookings);
-
-        } else {
-            alert('Ошибка: '+data.error);
-        }
-    });
-}
 window.onclick = function(event){
     const modal = document.getElementById('bookingModal');
-    if(event.target === modal) closeModal();
+    if(event.target===modal) closeModal();
 }
 
-
-
-document.querySelector(".modal-actions .confirm").onclick = ()=> changeStatus('confirmed');
-document.querySelector(".modal-actions .cancel").onclick = ()=> changeStatus('cancelled');
-
-// сводка
 const bookings = [
 {% for b in bookings %}
-{status:"{{ b.status }}"}{% if not forloop.last %},{% endif %}
+{id:{{ b.id }}, status:"{{ b.status }}"}{% if not forloop.last %},{% endif %}
 {% endfor %}
 ];
 
@@ -228,6 +180,31 @@ function updateSummary(bookings){
 }
 
 updateSummary(bookings);
+
+function changeStatus(newStatus){
+    if(!currentBookingId) return;
+    fetch("{% url 'change_status_banket' %}",{
+        method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded','X-CSRFToken':'{{ csrf_token }}'},
+        body:`id=${currentBookingId}&status=${newStatus}`
+    })
+    .then(r=>r.json())
+    .then(data=>{
+        if(data.success){
+            const statusEl = document.getElementById('modalStatus');
+            statusEl.className='status';
+            if(newStatus==='confirmed'){statusEl.classList.add('confirmed'); statusEl.innerText='Подтверждено';}
+            else if(newStatus==='waiting'){statusEl.classList.add('waiting'); statusEl.innerText='Ожидание';}
+            else if(newStatus==='cancelled'){statusEl.classList.add('cancelled'); statusEl.innerText='Отменено';}
+
+            bookings.forEach(b=>{if(b.id===currentBookingId) b.status=newStatus;});
+            updateSummary(bookings);
+        } else alert('Ошибка: '+data.error);
+    });
+}
+
+document.querySelector(".modal-actions .confirm").onclick = ()=> changeStatus('confirmed');
+document.querySelector(".modal-actions .cancel").onclick = ()=> changeStatus('cancelled');
 </script>
 
 </body>
