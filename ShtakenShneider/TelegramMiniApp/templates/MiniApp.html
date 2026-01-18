@@ -1,77 +1,233 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>Бронирование</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        body {
-            font-family: system-ui, sans-serif;
-            margin: 16px;
-            background: var(--tg-theme-bg-color);
-            color: var(--tg-theme-text-color);
-        }
-        .card {
-            background: var(--tg-theme-secondary-bg-color);
-            padding: 16px;
-            border-radius: 12px;
-            margin-bottom: 16px;
-        }
-        .row {
-            margin-bottom: 8px;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            margin-top: 8px;
-            font-size: 16px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-        .confirm {
-            background: #31b545;
-            color: white;
-        }
-        .cancel {
-            background: #e5484d;
-            color: white;
-        }
-        .hidden {
-            display: none;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Список бронирований</title>
+<style>
+body { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; padding: 20px; }
+h1, h2 { text-align:center; color:#4a90e2; margin-bottom:20px; }
+table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 30px;}
+th, td { padding: 12px 15px; text-align: left; }
+th { background: #4a90e2; color: #fff; }
+tr:nth-child(even) { background: #f0f4f8; }
+tr:hover { background: #e1ecf9; }
+.status { padding: 5px 10px; border-radius: 12px; font-weight: bold; text-align:center; display:inline-block; min-width:80px; }
+.status.confirmed { background:#d4edda; color:#155724; }
+.status.waiting { background:#fff3cd; color:#856404; }
+.status.cancelled { background:#f8d7da; color:#721c24; }
+button { padding: 5px 10px; margin: 2px; border:none; border-radius:4px; color:#fff; cursor:pointer; }
+button.confirm { background:#007bff; }
+button.cancel { background:#dc3545; }
+button.view { background:#6c757d; }
+
+/* модалка */
+.modal { display: none; position: fixed; z-index: 1000; left:0; top:0; width:100%; height:100%; overflow:auto; background-color: rgba(0,0,0,0.5); }
+.modal-content { background-color: #fff; margin: 10% auto; padding: 20px; border-radius:8px; width:500px; max-width:90%; box-shadow:0 5px 15px rgba(0,0,0,0.3); }
+.close { color:#aaa; float:right; font-size:28px; font-weight:bold; cursor:pointer; }
+.close:hover { color:#000; }
+.modal-actions { text-align:right; margin-top:20px; }
+.summary { display:flex; justify-content:space-around; margin-bottom:20px; gap:10px; }
+.summary-item { flex:1; text-align:center; background:#fff; border-radius:8px; padding:15px 10px; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+.summary-item h3 { margin:0 0 5px 0; font-size:16px; color:#555; }
+.summary-item p { margin:0; font-size:22px; font-weight:bold; }
+.summary-item.waiting { background:#fff3cd; color:#856404; }
+.summary-item.confirmed { background:#d4edda; color:#155724; }
+.summary-item.cancelled { background:#f8d7da; color:#721c24; }
+.summary-item.total { background:#cce5ff; color:#004085; }
+</style>
 </head>
 <body>
 
-<h2>🍽 Новая бронь</h2>
+<h1>Штакеншнейдер</h1>
+<h2>Список бронирований</h2>
 
-<!-- Контейнер для карточек бронирования -->
-<div id="bookings-container"></div>
-
-<!-- Кнопки подтверждения/отмены (можно использовать для выбора одного бронирования) -->
-<div id="buttons" class="hidden">
-    <button class="confirm" onclick="confirmBooking()">✅ Подтвердить</button>
-    <button class="cancel" onclick="cancelBooking()">❌ Отменить</button>
+<!-- сводка -->
+<div class="summary">
+    <div class="summary-item waiting">
+        <h3>Ожидание</h3>
+        <p id="summaryWaiting">0</p>
+    </div>
+    <div class="summary-item confirmed">
+        <h3>Подтверждено</h3>
+        <p id="summaryConfirmed">0</p>
+    </div>
+    <div class="summary-item cancelled">
+        <h3>Отменено</h3>
+        <p id="summaryCancelled">0</p>
+    </div>
+    <div class="summary-item total">
+        <h3>Всего</h3>
+        <p id="summaryTotal">0</p>
+    </div>
 </div>
 
-<!-- Сообщение о доступе запрещён -->
-<div id="access-denied" class="hidden">
-    <h2>❌ Доступ запрещён</h2>
-    <p>Открыть миниапп можно только через Telegram с разрешённым аккаунтом.</p>
+<!-- новые бронирования -->
+{% if new_bookings %}
+<h2>Новые бронирования</h2>
+<table>
+<thead>
+<tr>
+<th>Номер</th><th>Имя</th><th>Телефон</th><th>Дата и время</th><th>Гостей</th><th>Зал</th><th>Статус</th><th>Действия</th>
+</tr>
+</thead>
+<tbody>
+{% for b in new_bookings %}
+<tr data-id="{{ b.id }}">
+<td>{{ b.id }}</td>
+<td>{{ b.first_name|default:"-" }} {{ b.last_name|default:"-" }}</td>
+<td>{{ b.phone|default:"-" }}</td>
+<td>{{ b.created_at|date:"d.m.Y H:i" }}</td>
+<td>{{ b.guests|default:"-" }}</td>
+<td>{{ b.hall|default:"-" }}</td>
+<td><span class="status waiting">Ожидание</span></td>
+<td>
+<button class="view" onclick="openModal({{ b.id }}, '{{ b.first_name|default:'' }}', '{{ b.last_name|default:'' }}', '{{ b.phone|default:'' }}', {{ b.guests|default:0 }}, '{{ b.hall|default:'' }}', '{{ b.comments|default:'' }}', '{{ b.created_at|date:'d.m.Y H:i' }}', '{{ b.status }}')">Просмотр</button>
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+{% endif %}
+
+<!-- обработанные бронирования -->
+{% if processed_bookings %}
+<h2>Обработанные бронирования</h2>
+<table>
+<thead>
+<tr>
+<th>Номер</th><th>Имя</th><th>Телефон</th><th>Дата и время</th><th>Гостей</th><th>Зал</th><th>Статус</th><th>Действия</th>
+</tr>
+</thead>
+<tbody>
+{% for b in processed_bookings %}
+<tr data-id="{{ b.id }}">
+<td>{{ b.id }}</td>
+<td>{{ b.first_name|default:"-" }} {{ b.last_name|default:"-" }}</td>
+<td>{{ b.phone|default:"-" }}</td>
+<td>{{ b.created_at|date:"d.m.Y H:i" }}</td>
+<td>{{ b.guests|default:"-" }}</td>
+<td>{{ b.hall|default:"-" }}</td>
+<td>
+{% if b.status == "confirmed" %}
+<span class="status confirmed">Подтверждено</span>
+{% elif b.status == "cancelled" %}
+<span class="status cancelled">Отменено</span>
+{% endif %}
+</td>
+    <td>
+<button class="view" onclick="openModal({{ b.id }}, '{{ b.first_name|default:'' }}', '{{ b.last_name|default:'' }}', '{{ b.phone|default:'' }}', {{ b.guests|default:0 }}, '{{ b.hall|default:'' }}', '{{ b.comments|default:'' }}', '{{ b.created_at|date:'d.m.Y H:i' }}', '{{ b.status }}')">Просмотр</button>
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+{% endif %}
+
+<!-- модалка -->
+<div id="bookingModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <h2>Детали бронирования</h2>
+    <p><strong>Имя:</strong> <span id="modalName"></span></p>
+    <p><strong>Телефон:</strong> <span id="modalPhone"></span></p>
+    <p><strong>Гостей:</strong> <span id="modalGuests"></span></p>
+    <p><strong>Зал:</strong> <span id="modalHall"></span></p>
+    <p><strong>Комментарии:</strong> <span id="modalComments"></span></p>
+    <p><strong>Дата и время:</strong> <span id="modalDate"></span></p>
+    <p><strong>Статус:</strong> <span id="modalStatus"></span></p>
+    <div class="modal-actions">
+        <button class="confirm">Подтвердить</button>
+        <button class="cancel">Отменить</button>
+    </div>
+  </div>
 </div>
 
 <script>
-// Функции для кнопок
-function confirmBooking() {
-    alert("Бронь подтверждена (пока мок)");
-    tg.close();
+let currentBookingId = null;
+
+function openModal(id, firstName, lastName, phone, guests, hall, comments, date, status) {
+    currentBookingId = id;
+    document.getElementById('modalName').innerText = firstName;
+    document.getElementById('modalPhone').innerText = phone;
+    document.getElementById('modalGuests').innerText = guests;
+    document.getElementById('modalHall').innerText = hall;
+    document.getElementById('modalComments').innerText = comments || "-";
+    document.getElementById('modalDate').innerText = date;
+
+    const statusEl = document.getElementById('modalStatus');
+    statusEl.className = 'status';
+    if(status === 'confirmed') { statusEl.classList.add('confirmed'); statusEl.innerText='Подтверждено'; }
+    else if(status === 'waiting') { statusEl.classList.add('waiting'); statusEl.innerText='Ожидание'; }
+    else if(status === 'cancelled') { statusEl.classList.add('cancelled'); statusEl.innerText='Отменено'; }
+
+    document.getElementById('bookingModal').style.display="block";
 }
 
-function cancelBooking() {
-    alert("Бронь отменена (пока мок)");
-    tg.close();
+function closeModal() {
+    document.getElementById('bookingModal').style.display="none";
+    // при закрытии — перезагрузка, чтобы обновить таблицы
+    window.location.reload();
 }
+function changeStatus(newStatus){
+    if(!currentBookingId) return;
+
+    fetch("{% url 'change_status' %}",{
+        method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded','X-CSRFToken':'{{ csrf_token }}'},
+        body:`id=${currentBookingId}&status=${newStatus}`
+    })
+    .then(r=>r.json())
+    .then(data=>{
+        if(data.success){
+            // обновляем модалку динамически
+            const statusEl = document.getElementById('modalStatus');
+            statusEl.className = 'status';
+            if(newStatus==='confirmed'){ statusEl.classList.add('confirmed'); statusEl.innerText='Подтверждено'; }
+            else if(newStatus==='waiting'){ statusEl.classList.add('waiting'); statusEl.innerText='Ожидание'; }
+            else if(newStatus==='cancelled'){ statusEl.classList.add('cancelled'); statusEl.innerText='Отменено'; }
+
+            // обновляем массив для сводки
+            bookings.forEach(b=>{
+                if(b.id===currentBookingId) b.status=newStatus;
+            });
+            updateSummary(bookings);
+
+        } else {
+            alert('Ошибка: '+data.error);
+        }
+    });
+}
+window.onclick = function(event){
+    const modal = document.getElementById('bookingModal');
+    if(event.target === modal) closeModal();
+}
+
+
+
+document.querySelector(".modal-actions .confirm").onclick = ()=> changeStatus('confirmed');
+document.querySelector(".modal-actions .cancel").onclick = ()=> changeStatus('cancelled');
+
+// сводка
+const bookings = [
+{% for b in bookings %}
+{status:"{{ b.status }}"}{% if not forloop.last %},{% endif %}
+{% endfor %}
+];
+
+function updateSummary(bookings){
+    let waiting=0, confirmed=0, cancelled=0;
+    bookings.forEach(b=>{
+        if(b.status==='waiting') waiting++;
+        else if(b.status==='confirmed') confirmed++;
+        else if(b.status==='cancelled') cancelled++;
+    });
+    document.getElementById('summaryWaiting').innerText=waiting;
+    document.getElementById('summaryConfirmed').innerText=confirmed;
+    document.getElementById('summaryCancelled').innerText=cancelled;
+    document.getElementById('summaryTotal').innerText=bookings.length;
+}
+
+updateSummary(bookings);
 </script>
 
 </body>

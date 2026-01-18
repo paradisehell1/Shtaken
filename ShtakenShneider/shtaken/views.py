@@ -14,6 +14,7 @@ def booking(request):
         phone = request.POST.get("phone", "")
         guests = request.POST.get("guests", "")
         hall = request.POST.get("hall", "")
+        status="waiting"
         comments = request.POST.get("comments", "")
 
         booking = Booking.objects.create(
@@ -22,6 +23,7 @@ def booking(request):
             phone=phone,
             guests=guests,
             hall=hall,
+            status=status,
             comments=comments
         )
 

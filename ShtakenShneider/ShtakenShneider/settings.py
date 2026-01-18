@@ -4,19 +4,15 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ==============================
-# Основные настройки
+# ОСНОВНЫЕ
 # ==============================
-SECRET_KEY = 'django-insecure-y7958($-iargdwfx@id(kqb5v$(o0+qjn%$2*)i2z&i1(uwui4'
-DEBUG = False
+SECRET_KEY = 'dev-secret-key'
+DEBUG = True
 
-ALLOWED_HOSTS = [
-    'dfgfdfgdgffdgfdf.website',
-    'www.dfgfdfgdgffdgfdf.website',
-    '195.161.54.46',  # если нужен доступ по IP
-]
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 # ==============================
-# Приложения
+# ПРИЛОЖЕНИЯ
 # ==============================
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -25,11 +21,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'shtaken',
+    'TelegramMiniApp',
 ]
 
 # ==============================
-# Middleware
+# MIDDLEWARE
 # ==============================
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -42,10 +40,13 @@ MIDDLEWARE = [
 ]
 
 # ==============================
-# URLs и WSGI
+# URLS
 # ==============================
 ROOT_URLCONF = 'ShtakenShneider.urls'
 
+# ==============================
+# ШАБЛОНЫ
+# ==============================
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -61,10 +62,13 @@ TEMPLATES = [
     },
 ]
 
+# ==============================
+# WSGI
+# ==============================
 WSGI_APPLICATION = 'ShtakenShneider.wsgi.application'
 
 # ==============================
-# База данных
+# DATABASE
 # ==============================
 DATABASES = {
     'default': {
@@ -74,24 +78,12 @@ DATABASES = {
 }
 
 # ==============================
-# Безопасность HTTPS
-# ==============================
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = False  # редирект делает Nginx
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
-SECURE_HSTS_SECONDS = 31536000  # HTTP Strict Transport Security
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
-
-# ==============================
-# Статика
+# STATIC
 # ==============================
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'static/'
 
 # ==============================
-# Локализация и время
+# I18N
 # ==============================
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
@@ -99,6 +91,11 @@ USE_I18N = True
 USE_TZ = True
 
 # ==============================
-# Дополнительно
+# DEFAULT PK
+# ==============================
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ==============================
+# DEV ONLY
 # ==============================
 APPEND_SLASH = True

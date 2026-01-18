@@ -6,6 +6,7 @@ class Booking(models.Model):
     phone = models.CharField("Телефон", max_length=20)
     guests = models.PositiveIntegerField("Количество гостей")
     hall = models.CharField("Зал", max_length=10)
+    status =models.CharField(verbose_name="Статус",max_length=50)
     comments = models.TextField("Комментарии", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
