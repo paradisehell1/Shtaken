@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, filters
 from .models import Page, Media
 from .serializers import PageSerializer, MediaSerializer
 from rest_framework.permissions import IsAuthenticated
@@ -9,14 +9,28 @@ from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from .models import Media
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.permissions import IsAuthenticated
+from .models import Page,PageBlock
+from .serializers import PageSerializer
+from .serializers import PageSerializer, PageBlockSerializer
+class PageViewSet(ModelViewSet):
 
-class PageViewSet(viewsets.ModelViewSet):
-    queryset = Page.objects.all().order_by('-created_at')
+
+    queryset = Page.objects.all()   # 👈 ВАЖНО
     serializer_class = PageSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = Page.objects.all().order_by("-created_at")
+
+        status = self.request.query_params.get("status")
+        if status:
+            qs = qs.filter(status=status)
+
+        return qs
 
     def perform_create(self, serializer):
-        # автоматически ставим текущего пользователя как автора
         serializer.save(author=self.request.user)
 
 class MediaViewSet(viewsets.ModelViewSet):
@@ -30,3 +44,13 @@ class MediaViewSet(viewsets.ModelViewSet):
         file = self.request.data.get('file')
         name = self.request.data.get('name') or (file.name if file else "unnamed")
         serializer.save(name=name)
+
+class PageViewSet(viewsets.ModelViewSet):
+    queryset = Page.objects.all()
+    serializer_class = PageSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+class PageBlockViewSet(viewsets.ModelViewSet):
+    queryset = PageBlock.objects.all()
+    serializer_class = PageBlockSerializer
+    permission_classes = [permissions.IsAuthenticated]
