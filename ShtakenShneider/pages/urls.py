@@ -5,4 +5,5 @@ router = DefaultRouter()
 router.register(r'pages', PageViewSet)
 router.register(r'media', MediaViewSet, basename='media')
 router.register(r'blocks', PageBlockViewSet)
+
 urlpatterns = router.urls

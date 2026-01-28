@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { PageBlock } from "@/types"
 
 interface Props {
@@ -7,34 +7,54 @@ interface Props {
   onRemove: () => void
 }
 
-export default function TextBlock({ block, onChange, onRemove }: Props) {
-  const [title, setTitle] = useState(block.content?.title || "")
-  const [text, setText] = useState(
-    typeof block.content === "string" ? block.content : block.content?.text || ""
+export default function TextBlock({
+  block,
+  onChange,
+  onRemove,
+}: Props) {
+
+  const [title, setTitle] = useState(
+    block.content?.title || ""
   )
 
-  // синхронизация с родителем
-  useEffect(() => {
-    onChange({ title, text })
-  }, [title, text])
+  const [text, setText] = useState(
+    block.content?.text || ""
+  )
 
   return (
-    <div className="border p-2 rounded mb-2 bg-white">
+    <div className="bg-white p-2">
+
       <div className="flex justify-between mb-2">
-        <span className="font-semibold">Text Block</span>
-        <button onClick={onRemove} className="text-red-500 font-bold">Remove</button>
+        <strong>Text Block</strong>
+
+        <button
+          onClick={onRemove}
+          className="text-red-600"
+        >
+          Remove
+        </button>
       </div>
+
       <input
-        className="w-full border p-1 rounded mb-1 text-black"
+        className="w-full border p-1 mb-1 text-black"
         placeholder="Block title"
         value={title}
-        onChange={e => setTitle(e.target.value)}
+        onChange={e => {
+          const v = e.target.value
+          setTitle(v)
+          onChange({ title: v, text })
+        }}
       />
+
       <textarea
-        className="w-full border p-2 rounded text-black"
+        className="w-full border p-2 text-black"
         placeholder="Block text"
         value={text}
-        onChange={e => setText(e.target.value)}
+        onChange={e => {
+          const v = e.target.value
+          setText(v)
+          onChange({ title, text: v })
+        }}
       />
     </div>
   )
