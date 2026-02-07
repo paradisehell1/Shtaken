@@ -2,9 +2,10 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<title>Список бронирований</title>
-      <style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Заявки</title>
+  <style>
         @font-face {
     font-family: 'Caxton Bk BT';
     src: url("{% static 'TelegramMiniApp/fonts/caxtonbt_bold.ttf' %}") format("truetype");
@@ -56,16 +57,11 @@ body {
       gap: 20px;
       align-items: center;
     }
-.cards-grid {
-  display: flex;
-  flex-wrap: wrap;      /* перенос карточек на новую строку */
-  gap: 20px;            /* отступы между карточками */
-  justify-content: center; /* центрирование */
-}
+
 .card {
   position: relative; /* нужно, чтобы псевдоэлемент позиционировался относительно карточки */
-  width: 335px;
-
+  width: 304px;
+  max-height: 479px;
   background: #FFF6E2;
   border-radius: 8px;
   padding: 20px 16px;
@@ -180,44 +176,43 @@ color:#690505;
   </style>
 </head>
 <body>
-<div class="container">
+
+  <div class="container">
           <div class="logo">
       {% include "svg/icon.svg" %}
     </div>
+<!-- Карточка: Резерв столиков -->
+<div class="card">
+  <h3>Резерв столиков</h3>
+  <p>Список всех заявок бронирования столиков</p>
+  <button onclick="window.location.href='{% url 'tables' %}'" class="btn"><span>Перейти</span> </button>
 
-        {% for b in new_bookings %}
-        <div class="card" data-id="{{ b.id }}">
-            <h3>Бронирование #{{ b.id }}</h3>
-            <p><strong>Имя:</strong> {{ b.first_name|default:"-" }} {{ b.last_name|default:"-" }}</p>
-            <p><strong>Телефон:</strong> {{ b.phone|default:"-" }}</p>
-            <p><strong>Дата и время:</strong> {{ b.created_at|date:"d.m.Y H:i" }}</p>
-            <p><strong>Гостей:</strong> {{ b.guests|default:"-" }}</p>
-            <p><strong>Зал:</strong> {{ b.hall|default:"-" }}</p>
-            <p><strong>Статус:</strong> <span class="status {{ b.status|default:'waiting' }}">{{ b.status|default:"Ожидание" }}</span></p>
-            <button onclick="window.location.href='{% url 'bankets' %}'" class="btn"><span>Обработать заявку</span></button>
-        </div>
-        {% empty %}
-        <p>Новых заявок нет</p>
-        {% endfor %}
+  {% if new_table_count > 0 %}
+    <span class="circle">+{{ new_table_count }}</span>
+  {% endif %}
+</div>
 
+<!-- Карточка: Заявки на банкет -->
+<div class="card">
+  <h3>Заявки на банкет</h3>
+  <p>Список всех заявок на банкет</p>
+  <button onclick="window.location.href='{% url 'bankets' %}'"class="btn"><span>Перейти</span></button>
 
+  {% if new_banket_count > 0 %}
+    <span class="circle">+{{ new_banket_count }}</span>
+  {% endif %}
+</div>
 
-        {% for b in processed_bookings  %}
-        <div class="card" data-id="{{ b.id }}">
-            <h3>Бронирование #{{ b.id }}</h3>
-            <p><strong>Имя:</strong> {{ b.first_name|default:"-" }} {{ b.last_name|default:"-" }}</p>
-            <p><strong>Телефон:</strong> {{ b.phone|default:"-" }}</p>
-            <p><strong>Дата и время:</strong> {{ b.created_at|date:"d.m.Y H:i" }}</p>
-            <p><strong>Гостей:</strong> {{ b.guests|default:"-" }}</p>
-            <p><strong>Зал:</strong> {{ b.hall|default:"-" }}</p>
-            <p><strong>Статус:</strong> <span class="status {{ b.status|default:'waiting' }}">{{ b.status|default:"Ожидание" }}</span></p>
-            <button onclick="window.location.href='{% url 'bankets' %}'" class="btn"><span>Обработать заявку</span></button>
-        </div>
-        {% empty %}
-        <p>Заявок нет</p>
-        {% endfor %}
+<!-- Карточка: Все заявки -->
+<div class="card">
+  <h3>Все заявки</h3>
+  <p>Список всех заявок бронирования столиков и банкетов</p>
+  <button class="btn"><span>Перейти</span></button>
 
 </div>
-</body>
 
+
+  </div>
+
+</body>
 </html>

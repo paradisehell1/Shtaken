@@ -68,3 +68,35 @@ def change_status_banket(request):
         except BookingBanket.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Booking not found'})
     return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+
+def start_screen(request):
+    # Все заявки на банкет
+    bookings_banket = BookingBanket.objects.all().order_by('-created_at')
+    new_banket = bookings_banket.filter(status='waiting')
+    processed_banket = bookings_banket.filter(status__in=['confirmed', 'cancelled'])
+
+    # Все бронирования столиков
+    bookings_table = Booking.objects.all().order_by('-created_at')
+    new_tables = bookings_table.filter(status='waiting')
+    processed_tables = bookings_table.filter(status__in=['confirmed', 'cancelled'])
+    new_banket_count = new_banket.count()
+    new_table_count = new_tables.count()
+    all_banket_count = bookings_banket.count()
+    all_table_count = bookings_table.count()
+    print("=== Консоль: Передаваемые данные в шаблон ===")
+    print(f"new_banket_count = {new_banket_count}")
+    print(f"new_table_count = {new_table_count}")
+    print(f"all_banket_count = {all_banket_count}")
+    print(f"all_table_count = {all_table_count}")
+    print("===========================================")
+    return render(request, "startScreen.html", {
+        'new_banket_count': new_banket.count(),
+        'new_table_count': new_tables.count(),
+        'all_banket_count': bookings_banket.count(),
+        'all_table_count': bookings_table.count(),
+        'new_banket': new_banket,
+        'new_tables': new_tables,
+        'bookings_banket': bookings_banket,
+        'bookings_table': bookings_table,
+    })
